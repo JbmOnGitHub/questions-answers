@@ -29,8 +29,8 @@ namespace ModuleZeroSampleProject.Tests.Questions
             UsingDbContext(context => context.Questions.FirstOrDefault(q => q.Title == questionTitle).ShouldBe(null));
 
             //Create the question
-            _questionAppService.CreateQuestion(
-                new CreateQuestionInput
+            _questionAppService.Handle(
+                new CreateQuestion
                 {
                     Title = questionTitle,
                     Text = "A dummy question text..."
@@ -41,12 +41,16 @@ namespace ModuleZeroSampleProject.Tests.Questions
             question.ShouldNotBe(null);
 
             //Vote up the question
-            var voteUpOutput = _questionAppService.VoteUp(new EntityDto(question.Id));
-            voteUpOutput.VoteCount.ShouldBe(1);
+            _questionAppService.Handle(new VoteUp(question.Id));
+            //will correctly implemented in next iteration
+            question = UsingDbContext(context => context.Questions.FirstOrDefault(q => q.Title == questionTitle));
+            question.VoteCount.ShouldBe(1);
 
             //Vote down the question
-            var voteDownOutput = _questionAppService.VoteDown(new EntityDto(question.Id));
-            voteDownOutput.VoteCount.ShouldBe(0);
+            _questionAppService.Handle(new VoteDown(question.Id));
+            //will correctly implemented in next iteration
+            question = UsingDbContext(context => context.Questions.FirstOrDefault(q => q.Title == questionTitle));
+            question.VoteCount.ShouldBe(0);
         }
 
         [Fact]
@@ -55,8 +59,8 @@ namespace ModuleZeroSampleProject.Tests.Questions
             AbpSession.UserId = null; //not logged in
 
             await Assert.ThrowsAsync<AbpAuthorizationException>(
-                () => _questionAppService.CreateQuestion(
-                    new CreateQuestionInput
+                () => _questionAppService.Handle(
+                    new CreateQuestion
                     {
                         Title = "A dummy title",
                         Text = "A dummy question text..."

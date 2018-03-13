@@ -38,7 +38,52 @@ namespace ModuleZeroSampleProject.Questions
             _unitOfWorkManager = unitOfWorkManager;
         }
 
-        public PagedResultDto<QuestionDto> GetQuestions(GetQuestionsInput input)
+        [AbpAuthorize(PermissionNames.Pages_Questions_Create)] //An example of permission checking
+        public async Task Handle(CreateQuestion cmd)
+        {
+            await _questionRepository.InsertAsync(new Question(cmd.Title, cmd.Text));
+        }
+        
+        public Task Handle(VoteUp cmd)
+        {
+            var question = _questionRepository.Get(cmd.Id);
+            question.VoteCount++;
+            return _questionRepository.UpdateAsync(question);
+        }
+
+        public Task Handle(VoteDown cmd)
+        {
+            var question = _questionRepository.Get(cmd.Id);
+            question.VoteCount--;
+            return _questionRepository.UpdateAsync(question);
+        }
+
+        [AbpAuthorize(PermissionNames.Pages_AnswerToQuestions)]
+        public Task Handle(SubmitAnswer cmd)
+        {
+            var question = _questionRepository.Get(cmd.QuestionId);
+            var currentUser = _userRepository.Get(AbpSession.GetUserId());
+
+            question.AnswerCount++;
+
+           return _answerRepository.InsertAsync(
+                new Answer(cmd.Text)
+                {
+                    Question = question,
+                    CreatorUser = currentUser
+                });
+        }
+
+        public Task Handle(AcceptAnswer cmd)
+        {
+            var answer = _answerRepository.Get(cmd.Id);
+            _questionDomainService.AcceptAnswer(answer);
+            return _answerRepository.UpdateAsync(answer);
+        }
+
+        //Queries
+
+        public PagedResultDto<QuestionDto> Query(GetQuestions input)
         {
             if (input.MaxResultCount <= 0)
             {
@@ -55,19 +100,13 @@ namespace ModuleZeroSampleProject.Questions
                     .ToList();
 
             return new PagedResultDto<QuestionDto>
-                   {
-                       TotalCount = questionCount,
-                       Items = questions.MapTo<List<QuestionDto>>()
-                   };
+            {
+                TotalCount = questionCount,
+                Items = questions.MapTo<List<QuestionDto>>()
+            };
         }
 
-        [AbpAuthorize(PermissionNames.Pages_Questions_Create)] //An example of permission checking
-        public async Task CreateQuestion(CreateQuestionInput input)
-        {
-            await _questionRepository.InsertAsync(new Question(input.Title, input.Text));
-        }
-
-        public GetQuestionOutput GetQuestion(GetQuestionInput input)
+        public GetQuestionOutput Query(GetQuestion input)
         {
             var question =
                 _questionRepository
@@ -75,65 +114,22 @@ namespace ModuleZeroSampleProject.Questions
                     .Include(q => q.CreatorUser)
                     .Include(q => q.Answers)
                     .Include("Answers.CreatorUser")
-                    .FirstOrDefault(q => q.Id == input.Id);
+                    .FirstOrDefault(q => q.Id == cmd.Id);
 
             if (question == null)
             {
                 throw new UserFriendlyException("There is no such a question. Maybe it's deleted.");
             }
 
-            if (input.IncrementViewCount)
+            if (cmd.IncrementViewCount)
             {
                 question.ViewCount++;
             }
 
             return new GetQuestionOutput
-                   {
-                       Question = question.MapTo<QuestionWithAnswersDto>()
-                   };
-        }
-
-        public VoteChangeOutput VoteUp(EntityDto input)
-        {
-            var question = _questionRepository.Get(input.Id);
-            question.VoteCount++;
-            return new VoteChangeOutput(question.VoteCount);
-        }
-
-        public VoteChangeOutput VoteDown(EntityDto input)
-        {
-            var question = _questionRepository.Get(input.Id);
-            question.VoteCount--;
-            return new VoteChangeOutput(question.VoteCount);
-        }
-
-        [AbpAuthorize(PermissionNames.Pages_AnswerToQuestions)]
-        public SubmitAnswerOutput SubmitAnswer(SubmitAnswerInput input)
-        {
-            var question = _questionRepository.Get(input.QuestionId);
-            var currentUser = _userRepository.Get(AbpSession.GetUserId());
-
-            question.AnswerCount++;
-
-            var answer = _answerRepository.Insert(
-                new Answer(input.Text)
-                {
-                    Question = question,
-                    CreatorUser = currentUser
-                });
-
-            _unitOfWorkManager.Current.SaveChanges();
-
-            return new SubmitAnswerOutput
-                   {
-                       Answer = answer.MapTo<AnswerDto>()
-                   };
-        }
-
-        public void AcceptAnswer(EntityDto input)
-        {
-            var answer = _answerRepository.Get(input.Id);
-            _questionDomainService.AcceptAnswer(answer);
+            {
+                Question = question.MapTo<QuestionWithAnswersDto>()
+            };
         }
     }
 }

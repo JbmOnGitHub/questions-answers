@@ -7,18 +7,20 @@ namespace ModuleZeroSampleProject.Questions
 {
     public interface IQuestionAppService : IApplicationService
     {
-        PagedResultDto<QuestionDto> GetQuestions(GetQuestionsInput input);
+        // Commands
+        Task Handle(CreateQuestion cmd);
 
-        Task CreateQuestion(CreateQuestionInput input);
+        Task Handle(VoteUp cmd);
 
-        GetQuestionOutput GetQuestion(GetQuestionInput input);
+        Task Handle(VoteDown cmd);
 
-        VoteChangeOutput VoteUp(EntityDto input);
+        Task Handle(SubmitAnswer cmd);
 
-        VoteChangeOutput VoteDown(EntityDto input);
+        Task Handle(AcceptAnswer cmd);
 
-        SubmitAnswerOutput SubmitAnswer(SubmitAnswerInput input);
+        //Queries
+        PagedResultDto<QuestionDto> Query(GetQuestions input);
 
-        void AcceptAnswer(EntityDto input);
+        GetQuestionOutput Query(GetQuestion input);
     }
 }
