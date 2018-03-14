@@ -114,14 +114,14 @@ namespace ModuleZeroSampleProject.Questions
                     .Include(q => q.CreatorUser)
                     .Include(q => q.Answers)
                     .Include("Answers.CreatorUser")
-                    .FirstOrDefault(q => q.Id == cmd.Id);
+                    .FirstOrDefault(q => q.Id == input.Id);
 
             if (question == null)
             {
                 throw new UserFriendlyException("There is no such a question. Maybe it's deleted.");
             }
 
-            if (cmd.IncrementViewCount)
+            if (input.IncrementViewCount)
             {
                 question.ViewCount++;
             }
