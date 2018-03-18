@@ -22,6 +22,7 @@ namespace ModuleZeroSampleProject
 
             Configuration.Modules.AbpWebApi().DynamicApiControllerBuilder
                 .ForAll<IApplicationService>(typeof(ModuleZeroSampleProjectApplicationModule).Assembly, "app")
+                .WithConventionalVerbs()
                 .Build();
 
             Configuration.Modules.AbpWebApi().HttpConfiguration.Filters.Add(new HostAuthenticationFilter("Bearer"));

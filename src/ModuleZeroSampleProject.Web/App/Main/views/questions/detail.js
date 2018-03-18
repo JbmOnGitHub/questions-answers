@@ -13,7 +13,8 @@
                 questionService.voteUp({
                     id: vm.question.id
                 }).success(function (data) {
-                    vm.question.voteCount = data.voteCount;
+                    //Fake the increment if success
+                    vm.question.voteCount += 1;
                     abp.notify.info("Saved your vote. Thanks.");
                 });
             };
@@ -22,7 +23,8 @@
                 questionService.voteDown({
                     id: vm.question.id
                 }).success(function (data) {
-                    vm.question.voteCount = data.voteCount;
+                    //Fake the increment if success
+                    vm.question.voteCount -= 1;
                     abp.notify.info("Saved your vote. Thanks.");
                 });
             };
@@ -32,7 +34,14 @@
                     questionId: vm.question.id,
                     text: vm.answerText
                 }).success(function (data) {
-                    vm.question.answers.push(data.answer);
+                    //Fake the increment if success
+                    var fakeAnswerReceived = {
+                        text: vm.answerText,
+                        questionId: vm.question.id,
+                        isAccepted: false,
+                        creatorUserName: 'you'
+                    };
+                    vm.question.answers.push(fakeAnswerReceived);
                     vm.answerText = '';
                 });
             };
