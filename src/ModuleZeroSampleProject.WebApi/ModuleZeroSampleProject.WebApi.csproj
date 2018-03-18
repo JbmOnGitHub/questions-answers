@@ -41,9 +41,6 @@
     <Reference Include="Abp.Web, Version=3.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Abp.Web.3.4.0\lib\net461\Abp.Web.dll</HintPath>
     </Reference>
-    <Reference Include="Abp.Web.Api, Version=3.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Abp.Web.Api.3.4.0\lib\net461\Abp.Web.Api.dll</HintPath>
-    </Reference>
     <Reference Include="Abp.Web.Common, Version=3.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Abp.Web.Common.3.4.0\lib\netstandard2.0\Abp.Web.Common.dll</HintPath>
     </Reference>
@@ -236,6 +233,10 @@
     <EmbeddedResource Include="Api\Scripts\Swagger-Custom.js" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Abp.Web.Api\Abp.Web.Api.csproj">
+      <Project>{e5da3bdd-edbe-4787-a978-e1deb2cb4a87}</Project>
+      <Name>Abp.Web.Api</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ModuleZeroSampleProject.Application\ModuleZeroSampleProject.Application.csproj">
       <Project>{EDF5D964-4C0F-4F19-B674-58A38A5E5401}</Project>
       <Name>ModuleZeroSampleProject.Application</Name>
