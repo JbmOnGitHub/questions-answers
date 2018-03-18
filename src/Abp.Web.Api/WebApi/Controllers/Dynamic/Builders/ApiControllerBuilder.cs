@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.Http.Filters;
 using Abp.Application.Services;
 using Abp.Dependency;
@@ -88,7 +89,7 @@ namespace Abp.WebApi.Controllers.Dynamic.Builders
                     actionBuilder.DontCreateAction();
                 }
 
-                _actionBuilders[methodInfo.Name] = actionBuilder;
+                _actionBuilders[actionBuilder.ActionName] = actionBuilder;
             }
         }
 
@@ -110,12 +111,14 @@ namespace Abp.WebApi.Controllers.Dynamic.Builders
         /// <returns>Action builder</returns>
         public IApiControllerActionBuilder<T> ForMethod(string methodName)
         {
-            if (!_actionBuilders.ContainsKey(methodName))
+            var actionBuilders = _actionBuilders.Where(v => v.Value.Method.Name == methodName);
+
+            if (actionBuilders.Count() == 0)
             {
                 throw new AbpException("There is no method with name " + methodName + " in type " + typeof(T).Name);
             }
 
-            return _actionBuilders[methodName];
+            return actionBuilders.First().Value;
         }
 
         public IApiControllerBuilder<T> ForMethods(Action<IApiControllerActionBuilder> action)

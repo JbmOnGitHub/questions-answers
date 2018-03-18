@@ -74,20 +74,29 @@ namespace Abp.WebApi.Controllers.Dynamic.Builders
 
         private string GetNormalizedActionName()
         {
+            string[] cqrsMethodNames = { "Handle", "Query" };
+            string actionName = Method.Name;
+
+            if (cqrsMethodNames.Contains(actionName) 
+                && Method.GetParameters().Count() > 0)
+            {
+                actionName = Method.GetParameters().First().ParameterType.Name;
+            }
+
             using (var config = _iocResolver.ResolveAsDisposable<IApiProxyScriptingConfiguration>())
             {
                 if (!config.Object.RemoveAsyncPostfixOnProxyGeneration)
                 {
-                    return Method.Name;
+                    return actionName;
                 }
             }
 
             if (!Method.IsAsync())
             {
-                return Method.Name;
+                return actionName;
             }
 
-            return Method.Name.RemovePostFix("Async");
+            return actionName.RemovePostFix("Async");
         }
 
         /// <summary>
@@ -206,6 +215,9 @@ namespace Abp.WebApi.Controllers.Dynamic.Builders
             {
                 return HttpVerb.Head;
             }
+
+            if (Method.Name == "Query")
+                return HttpVerb.Get;
 
             if (conventionalVerbs)
             {
